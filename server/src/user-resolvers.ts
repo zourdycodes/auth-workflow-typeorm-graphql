@@ -1,5 +1,6 @@
 import {
   Arg,
+  Ctx,
   Field,
   Mutation,
   ObjectType,
@@ -9,6 +10,7 @@ import {
 import { compare, hash } from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { User } from './entity/User';
+import { MyContext } from './my-context';
 
 @ObjectType()
 export class LoginResponse {
@@ -52,8 +54,9 @@ export class UserResolver {
 
   @Mutation(() => LoginResponse)
   async login(
-    @Arg('email') email: string,
-    @Arg('password') password: string
+    @Arg('email') email: string, // args => email
+    @Arg('password') password: string, // args => password
+    @Ctx() { res }: MyContext // args => context
   ): Promise<LoginResponse> {
     // get user data based on email
     const user = await User.findOne({
@@ -72,6 +75,23 @@ export class UserResolver {
     if (!valid) {
       throw new Error('invalid password! try again');
     }
+
+    // refresh token ===> cookie
+    // when user hasnt logged in for some amount of time
+    // it will be log out
+    res.cookie(
+      'jid',
+      sign(
+        {
+          userId: user.id,
+        },
+        'envuzgvyymfy',
+        { expiresIn: '7d' }
+      ),
+      {
+        httpOnly: true,
+      }
+    );
 
     // log in successfully
     return {
