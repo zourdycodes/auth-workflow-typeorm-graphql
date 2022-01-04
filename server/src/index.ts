@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import 'reflect-metadata';
 import express, { Request, Response } from 'express';
-import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
+import { ApolloServer } from 'apollo-server-express';
 import { UserResolver } from './user-resolvers';
 import { createConnection } from 'typeorm';
 
@@ -14,6 +14,8 @@ import { createConnection } from 'typeorm';
       message: 'hello muthafucker!',
     });
   });
+
+  app.post('/refresh_token', () => {});
 
   await createConnection();
 
