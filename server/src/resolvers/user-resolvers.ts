@@ -9,10 +9,10 @@ import {
   UseMiddleware,
 } from 'type-graphql';
 import { compare, hash } from 'bcryptjs';
-import { User } from './entity/User';
-import { MyContext } from './my-context';
-import { createAccessToken, createRefreshToken } from './auth';
-import { isAuth } from './middlewares/isAuthMiddleware';
+import { User } from '../entity/User';
+import { MyContext } from '../my-context';
+import { createAccessToken, createRefreshToken } from '../utils/auth';
+import { isAuth } from '../middlewares/isAuthMiddleware';
 
 @ObjectType()
 export class LoginResponse {

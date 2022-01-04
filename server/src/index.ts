@@ -3,7 +3,7 @@ import 'reflect-metadata';
 import express, { Request, Response } from 'express';
 import { buildSchema } from 'type-graphql';
 import { ApolloServer } from 'apollo-server-express';
-import { UserResolver } from './user-resolvers';
+import { UserResolver } from './resolvers/user-resolvers';
 import { createConnection } from 'typeorm';
 
 (async () => {
