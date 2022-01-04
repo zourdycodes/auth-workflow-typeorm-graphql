@@ -2,6 +2,7 @@ import {
   Arg,
   Ctx,
   Field,
+  Int,
   Mutation,
   ObjectType,
   Query,
@@ -13,6 +14,9 @@ import { User } from '../entity/User';
 import { MyContext } from '../my-context';
 import { createAccessToken, createRefreshToken } from '../utils/auth';
 import { isAuth } from '../middlewares/isAuthMiddleware';
+import { sendRefreshToken } from '../utils/sendRefreshToken';
+import { getConnection } from 'typeorm';
+import { verify } from 'jsonwebtoken';
 
 @ObjectType()
 export class LoginResponse {
@@ -42,6 +46,23 @@ export class UserResolver {
     return User.find();
   }
 
+  @Query(() => User, { nullable: true })
+  me(@Ctx() context: MyContext) {
+    const authorization = context.req.headers['authorization'];
+
+    if (!authorization) {
+      return null;
+    }
+
+    try {
+      const token = authorization.split(' ')[1];
+      const payload: any = verify(token, process.env.ACCESS_TOKEN_SECRET!);
+      return User.findOne(payload.userId);
+    } catch (err) {
+      return null;
+    }
+  }
+
   @Mutation(() => Boolean)
   async register(
     @Arg('email') email: string,
@@ -59,6 +80,25 @@ export class UserResolver {
       console.log(error);
       return false;
     }
+  }
+
+  @Mutation(() => Boolean)
+  async revokeRefreshTokenForUser(@Arg('userId', () => Int) userId: number) {
+    await getConnection()
+      .getRepository(User)
+      .increment({ id: userId }, 'tokenVersion', 1);
+
+    return {
+      success: true,
+      success_message: 'revoked all the token cookies successfully',
+    };
+  }
+
+  @Mutation(() => Boolean)
+  async logout(@Ctx() { res }: MyContext) {
+    sendRefreshToken(res, '');
+
+    return true;
   }
 
   @Mutation(() => LoginResponse)
@@ -88,9 +128,7 @@ export class UserResolver {
     // refresh token ===> cookie
     // when user hasn't logged in for some amount of time
     // it will be log out
-    res.cookie('jid', createRefreshToken(user), {
-      httpOnly: true,
-    });
+    sendRefreshToken(res, createRefreshToken(user));
 
     // log in successfully
     return {
