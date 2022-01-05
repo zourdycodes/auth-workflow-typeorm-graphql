@@ -1,5 +1,11 @@
 # authentication workflow with node and typescript
 
+Steps to run this project:
+
+1. Run `yarn install` command
+2. Setup database settings inside `ormconfig.json` file
+3. Run `yarn start` command
+
 ### technology & tools i used to build this workflow
 
 1. TypeORM
